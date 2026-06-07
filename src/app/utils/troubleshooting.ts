@@ -238,7 +238,11 @@ export const flows: TroubleshootingFlow[] = [
         options: [
           { label: 'Leak from faucet', nextId: 'check-faucet' },
           { label: 'Leak from thermostat or heater', nextId: 'replace-as-required' },
+          { label: 'No more leaks', nextId: 'issue-resolved'},
         ],
+      },
+      'issue-resolved': {
+        solution: 'Faucet has water now. To monitor for recurrence.',
       },
       'check-faucet': {
         question: 'Check leakage location\n\nHow is the water leaking?',
@@ -387,7 +391,7 @@ export const flows: TroubleshootingFlow[] = [
         solution: 'The IR sensor inside the faucet is likely faulty and continuously triggering water flow even without presence detection. You can try replacing the faucet unit.',
       },
       'issue-resolved': {
-        solution: 'Cleaning the IR sensor restored normal operation. A dirty or obstructed sensor can falsely signal that hands are present, keeping the valve open. Monitor for recurrence.',
+        solution: 'Cleaning the IR sensor restored normal operation. A dirty or obstructed sensor can falsely signal that hands are present, keeping the valve open. To monitor for recurrence.',
       },
     },
   },

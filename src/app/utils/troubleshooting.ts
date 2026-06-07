@@ -264,7 +264,7 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-cd': {
-        solution: 'CD has no power. Check connectors and replace the Control Device (CD) as required.\n\nCAUTION: Ensure power is isolated before replacing the CD.',
+        solution: 'CD has no power. Check connectors and replace the Control Device (CD) as required.',
       },
       'check-faucet-power': {
         question: 'Check Faucet\n\nIs the faucet receiving power?',
@@ -274,7 +274,7 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-faucet-no-power': {
-        solution: 'Without power, the faucet sensor cannot activate to trigger water flow. You can try replacing the faucet unit.\n\nCAUTION: Isolate water supply (SOV) before replacement.',
+        solution: 'Without power, the faucet sensor cannot activate to trigger water flow. You can try replacing the faucet unit.',
       },
       'check-thermostat-sound': {
         question: 'Check thermostat for sound\n\nDoes the thermostat make a click sound when activated?',
@@ -323,10 +323,10 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-faucet-leaking': {
-        solution: 'Faucet is leaking. You can try replacing the faucet unit.\n\nCAUTION: Shut off SOV before replacement.',
+        solution: 'Faucet is leaking. You can try replacing the faucet unit.',
       },
       'replace-thermostat-leaking': {
-        solution: 'Thermostat is the issue. You can try replacing the thermostat unit.\n\nCAUTION: Isolate electrical supply before replacing.',
+        solution: 'Thermostat is the issue. You can try replacing the thermostat unit.',
       },
     },
   },
@@ -384,7 +384,7 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-faucet': {
-        solution: 'The IR sensor inside the faucet is likely faulty and continuously triggering water flow even without presence detection. You can try replacing the faucet unit.\n\nCAUTION: Shut off SOV before replacement.',
+        solution: 'The IR sensor inside the faucet is likely faulty and continuously triggering water flow even without presence detection. You can try replacing the faucet unit.',
       },
       'issue-resolved': {
         solution: 'Cleaning the IR sensor restored normal operation. A dirty or obstructed sensor can falsely signal that hands are present, keeping the valve open. Monitor for recurrence.',
@@ -457,7 +457,7 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-thermostat-whirring': {
-        solution: 'No whirring sound — thermostat (Valve Water Mixer) is faulty. Replace the thermostat.\n\nCAUTION: Isolate power before replacement.',
+        solution: 'No whirring sound — thermostat (Valve Water Mixer) is faulty. Replace the thermostat.',
       },
       'check-heater': {
         question: 'Check Heater\n\nWhat is the condition of the heater?',
@@ -467,10 +467,10 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-heater': {
-        solution: 'Heater is cold — not functioning. Replace the water heater unit.\n\nWARNING: Isolate 115VAC power supply before heater replacement.',
+        solution: 'Heater is cold — not functioning. Replace the water heater unit.',
       },
       'replace-thermostat': {
-        solution: 'Thermostat is the issue. You can try replacing the thermostat unit.\n\nCAUTION: Isolate power before replacement.',
+        solution: 'Thermostat is the issue. You can try replacing the thermostat unit.',
       },
     },
   },
@@ -540,7 +540,7 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-thermostat-whirring': {
-        solution: 'No whirring sound — thermostat (Valve Water Mixer) is faulty. Replace the thermostat.\n\nCAUTION: Isolate power before replacement.',
+        solution: 'No whirring sound — thermostat (Valve Water Mixer) is faulty. Replace the thermostat.',
       },
       'check-heater': {
         question: 'Check Heater\n\nWhat is the condition of the heater?',
@@ -550,10 +550,10 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'replace-heater': {
-        solution: 'Heater is cold — not operating. Replace the water heater.\n\nWARNING: Isolate 115VAC before replacement.',
+        solution: 'Heater is cold — not operating. Replace the water heater.',
       },
       'replace-thermostat': {
-        solution: 'Thermostat is the issue. You can try replacing the thermostat unit.\n\nCAUTION: Isolate power before replacement.',
+        solution: 'Thermostat is the issue. You can try replacing the thermostat unit.',
       },
     },
   },
@@ -569,7 +569,7 @@ export const flows: TroubleshootingFlow[] = [
     nodeAnswerMap: {},
     nodes: {
       'replace-faucet-pressure': {
-        solution: 'Ensure the SOV is fully open when the faucet is replaced.\n\nCAUTION: Shut off SOV before faucet replacement.',
+        solution: 'Ensure the SOV is fully open when the faucet is replaced.',
       },
     },
   },

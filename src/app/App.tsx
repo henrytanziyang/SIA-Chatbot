@@ -577,101 +577,118 @@ export default function App() {
   const lastOptionsIndex = messages.reduce((acc, msg, i) => msg.options ? i : acc, -1);
 
   return (
-    <div className="size-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="relative bg-gradient-to-r from-[#00205B] via-[#003875] to-[#00205B] text-white px-6 py-4 shadow-lg overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB81C]/10 rounded-full blur-3xl"></div>
-        <div className="relative flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#FFB81C] rounded-full flex items-center justify-center">
-            <Plane className="w-5 h-5 text-[#00205B]" />
-          </div>
-          <div>
-            <h1 className="text-white">SIA Engineering Support</h1>
-            <p className="text-sm text-[#FFB81C]/90">Technical Troubleshooting Assistant</p>
+    // Outer shell — fills the full viewport on mobile, caps at phone width on desktop
+    <div className="flex justify-center items-stretch min-h-screen bg-gray-100">
+      <div className="relative flex flex-col w-full max-w-md min-h-screen bg-background shadow-2xl overflow-hidden">
+
+        {/* ── Status bar spacer (iOS safe area) ── */}
+        <div className="h-safe-top bg-[#00205B]" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
+
+        {/* ── Header ── */}
+        <div className="relative bg-gradient-to-r from-[#00205B] via-[#003875] to-[#00205B] text-white px-4 py-3 shadow-md overflow-hidden flex-shrink-0">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFB81C]/10 rounded-full blur-2xl" />
+          <div className="relative flex items-center gap-3">
+            <div className="w-9 h-9 bg-[#FFB81C] rounded-full flex items-center justify-center flex-shrink-0">
+              <Plane className="w-4 h-4 text-[#00205B]" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-white text-sm font-semibold leading-tight truncate">SIA Engineering Support</h1>
+              <p className="text-[#FFB81C]/90 text-xs truncate">Technical Troubleshooting Assistant</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        {messages.map((message, index) => (
-          <div key={message.id} className="space-y-3">
-            {message.isAutoAnswered ? (
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-[#00205B]/40">
-                  <Plane className="w-4 h-4 text-white/70" />
+        {/* ── Messages ── */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+          {messages.map((message, index) => (
+            <div key={message.id} className="space-y-2">
+              {message.isAutoAnswered ? (
+                <div className="flex gap-2">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center bg-[#00205B]/40">
+                    <Plane className="w-3.5 h-3.5 text-white/70" />
+                  </div>
+                  <div className="flex flex-col gap-1 max-w-[80%]">
+                    <div className="px-3 py-1.5 bg-muted/50 rounded-xl text-xs text-muted-foreground whitespace-pre-wrap opacity-70">
+                      {message.content}
+                    </div>
+                    <div className="px-2.5 py-1 bg-[#00205B]/10 rounded-lg text-xs text-[#00205B] font-medium self-start">
+                      ✓ {message.autoAnswerLabel}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1 max-w-[75%]">
-                  <div className="px-4 py-2 bg-muted/50 rounded-xl text-xs text-muted-foreground whitespace-pre-wrap opacity-70">
-                    {message.content}
+              ) : (
+                <ChatMessage
+                  role={message.role}
+                  content={message.content}
+                  timestamp={message.timestamp}
+                />
+              )}
+              {message.options && index === lastOptionsIndex && !isTyping && (
+                <div className="flex justify-start pl-9">
+                  <div className="w-full max-w-[85%]">
+                    <OptionButtons
+                      options={message.options}
+                      onSelect={handleOptionSelect}
+                    />
                   </div>
-                  <div className="px-3 py-1.5 bg-[#00205B]/10 rounded-lg text-xs text-[#00205B] font-medium self-start">
-                    ✓ {message.autoAnswerLabel}
-                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {isTyping && (
+            <div className="flex gap-2">
+              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center bg-[#00205B]">
+                <span className="text-white text-xs leading-none">•••</span>
+              </div>
+              <div className="flex items-center px-3 py-2.5 bg-muted rounded-2xl">
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
-            ) : (
-              <ChatMessage
-                role={message.role}
-                content={message.content}
-                timestamp={message.timestamp}
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* ── Input bar (pinned to bottom like WhatsApp) ── */}
+        <div
+          className="flex-shrink-0 border-t bg-card px-3 py-2"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+        >
+          <div className="flex gap-2 items-end">
+            <div className="flex-1">
+              <textarea
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  // Auto-grow textarea
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  currentFlow
+                    ? 'Type your findings...'
+                    : 'Describe the defect, e.g. "A380 lavatory nil water, SOV open"'
+                }
+                rows={1}
+                className="w-full px-3 py-2.5 bg-input-background rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-[#00205B] text-sm leading-snug"
+                style={{ minHeight: '40px', maxHeight: '100px' }}
               />
-            )}
-            {message.options && index === lastOptionsIndex && !isTyping && (
-              <div className="flex justify-start">
-                <div className="max-w-[70%] ml-11">
-                  <OptionButtons
-                    options={message.options}
-                    onSelect={handleOptionSelect}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {isTyping && (
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-[#00205B]">
-              <span className="text-white text-xs">•••</span>
             </div>
-            <div className="flex items-center px-4 py-3 bg-muted rounded-2xl">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-              </div>
-            </div>
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isTyping}
+              className="flex-shrink-0 w-10 h-10 bg-[#00205B] text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input */}
-      <div className="border-t bg-card px-6 py-4">
-        <div className="flex gap-2 items-end max-w-4xl mx-auto">
-          <div className="flex-1 relative">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                currentFlow
-                  ? 'Select an option above, or type your findings to continue...'
-                  : "Describe the defect and steps already checked, e.g. \"A380 lavatory nil water, SOV is open, CD powered\"..."
-              }
-              className="w-full px-4 py-3 pr-12 bg-input-background rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#00205B] min-h-[56px] max-h-[120px]"
-              rows={1}
-            />
-          </div>
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isTyping}
-            className="flex-shrink-0 w-12 h-12 bg-[#00205B] text-white rounded-xl hover:bg-[#00205B]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-          >
-            <Send className="w-5 h-5" />
-          </button>
         </div>
+
       </div>
     </div>
   );

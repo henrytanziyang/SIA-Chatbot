@@ -234,11 +234,12 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'sov-closed': {
-        question: 'SOV is Closed\n\nOpen the SOV fully and check for leaks.',
+        question: 'SOV is Closed\n\nOpen the SOV fully and check if water is flowing properly or if there is any leaks.',
         options: [
           { label: 'Leak from faucet', nextId: 'check-faucet' },
           { label: 'Leak from thermostat or heater', nextId: 'replace-as-required' },
-          { label: 'No more leaks', nextId: 'issue-resolved'},
+          { label: 'Water flowing properly with no leaks', nextId: 'issue-resolved'},
+          { label: 'Faucet has no water', nextId: 'check-cd'},
         ],
       },
       'issue-resolved': {

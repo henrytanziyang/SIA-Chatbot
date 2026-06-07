@@ -133,6 +133,8 @@ async function callClassifier(systemPrompt: string, userMessage: string): Promis
 }
 
 // ── AI node answer classifier ──────────────────────────────────────────────
+// Sends the current question + options to Qwen and asks which option the
+// user's message best matches. Returns nextId of matched option, or null.
 async function classifyNodeAnswer(
   question: string,
   options: { label: string; nextId: string }[],
@@ -176,6 +178,10 @@ Rules:
 }
 
 // ── AI-assisted walk ───────────────────────────────────────────────────────
+// Walks the flow from flow.startId using:
+//   1. Phrase matching (instant, no API call)
+//   2. classifyNodeAnswer fallback (Qwen) for nodes phrase matching can't resolve
+// Stops at the first node that neither method can answer.
 async function aiAssistedWalk(
   flow: TroubleshootingFlow,
   userInput: string
@@ -187,11 +193,13 @@ async function aiAssistedWalk(
     const node = flow.nodes[currentId];
     if (!node) break;
 
+    // Solution node — nothing left to resolve
     if (!node.options) {
       steps.push({ nodeId: currentId, autoLabel: null });
       break;
     }
 
+    // 1. Try phrase match first (instant)
     const phraseSteps = walkFlow({ ...flow, startId: currentId }, userInput);
     if (phraseSteps.length > 0 && phraseSteps[0].autoLabel !== null) {
       const matched = phraseSteps[0];
@@ -202,6 +210,7 @@ async function aiAssistedWalk(
       continue;
     }
 
+    // 2. AI classifier fallback — handles natural language
     const matchedNextId = await classifyNodeAnswer(
       node.question || '',
       node.options,
@@ -214,6 +223,7 @@ async function aiAssistedWalk(
       continue;
     }
 
+    // 3. Cannot resolve — present this node to the user
     steps.push({ nodeId: currentId, autoLabel: null });
     break;
   }
@@ -245,29 +255,10 @@ export default function App() {
   const [originalInput, setOriginalInput] = useState<string>('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // ── Scroll to bottom on new messages ──────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
-
-  // ── iOS keyboard fix: scroll messages when keyboard appears ───────────────
-  // Instead of resizing the container (which causes the jump), we just
-  // scroll the messages area to the bottom whenever the viewport resizes.
-  useEffect(() => {
-    const onResize = () => {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    };
-    window.visualViewport?.addEventListener('resize', onResize);
-    window.visualViewport?.addEventListener('scroll', onResize);
-    return () => {
-      window.visualViewport?.removeEventListener('resize', onResize);
-      window.visualViewport?.removeEventListener('scroll', onResize);
-    };
-  }, []);
 
   const timestamp = () =>
     new Date().toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' });
@@ -313,6 +304,8 @@ export default function App() {
   };
 
   // ── Advance to next node, then re-scan originalInput ─────────────────────
+  // After confirming any node answer, re-scans the original message using
+  // aiAssistedWalk so subsequent nodes already mentioned are auto-answered.
   const advanceToNode = async (
     flow: TroubleshootingFlow,
     fromNodeId: string,
@@ -333,6 +326,7 @@ export default function App() {
       autoAnswerLabel: autoLabel,
     };
 
+    // Re-scan using AI-assisted walk from the next node
     const subFlow = { ...flow, startId: nextId };
     const furtherSteps = await aiAssistedWalk(subFlow, rescanInput);
 
@@ -391,8 +385,13 @@ export default function App() {
     setIsTyping(true);
 
     // ── CASE 1: Mid-flow typed input ──────────────────────────────────────
+    // 1a. Phrase match on current node (instant)
+    // 1b. AI node classifier (natural language)
+    // 1c. Component query
+    // 1d. Qwen general answer, then resume
     if (currentFlow && pendingNode) {
       try {
+        // 1a. Phrase match
         const subFlow = { ...currentFlow, startId: pendingNode.nodeId };
         const phraseSteps = walkFlow(subFlow, textToSend);
 
@@ -407,6 +406,7 @@ export default function App() {
           }
         }
 
+        // 1b. AI node classifier
         const currentNode = currentFlow.nodes[pendingNode.nodeId];
         if (currentNode?.options) {
           const matchedNextId = await classifyNodeAnswer(
@@ -422,6 +422,7 @@ export default function App() {
           }
         }
 
+        // 1c. Component query mid-flow
         const componentName = await callClassifier(COMPONENT_CLASSIFIER_PROMPT, textToSend);
         const componentInfo = components.find(c => c.name === componentName) ?? null;
 
@@ -445,6 +446,7 @@ export default function App() {
           return;
         }
 
+        // 1d. Qwen general answer, then resume
         const aiResponse = await callQwen([{ role: 'user', content: textToSend }]);
         const answerMsg: Message = {
           id: (Date.now() + 1).toString(),
@@ -490,6 +492,7 @@ export default function App() {
         callClassifier(FLOW_CLASSIFIER_PROMPT, textToSend),
       ]);
 
+      // ── CASE 3: Flow takes priority ───────────────────────────────────
       if (VALID_FLOWS.includes(flowId.toLowerCase())) {
         const flow = getFlowById(flowId.toLowerCase());
         if (flow) {
@@ -501,6 +504,7 @@ export default function App() {
         }
       }
 
+      // ── CASE 2: Pure component query ──────────────────────────────────
       if (VALID_COMPONENTS.includes(componentName)) {
         const componentInfo = components.find(c => c.name === componentName) ?? null;
         if (componentInfo) {
@@ -516,6 +520,7 @@ export default function App() {
         }
       }
 
+      // ── CASE 4: Qwen general response ─────────────────────────────────
       const history = [...messages, userMsg]
         .filter(m => !(m.id === '1' && m.role === 'assistant'))
         .map(m => ({ role: m.role, content: m.content }));
@@ -556,6 +561,8 @@ export default function App() {
     setMessages(prev => [...prev, userMsg]);
     setIsTyping(true);
 
+    // Re-scan originalInput after advancing so subsequent nodes already
+    // mentioned in the original message are auto-answered
     advanceToNode(currentFlow, pendingNode.nodeId, option.nextId, option.label, originalInput)
       .finally(() => setIsTyping(false));
   };
@@ -570,14 +577,12 @@ export default function App() {
   const lastOptionsIndex = messages.reduce((acc, msg, i) => msg.options ? i : acc, -1);
 
   return (
-    // Use 100dvh — do NOT manipulate height dynamically.
-    // The input bar stays at the bottom naturally because the browser
-    // scrolls the page up when the keyboard opens on modern iOS/Android.
-    <div className="flex justify-center items-stretch bg-gray-100" style={{ height: '100dvh' }}>
-      <div className="relative flex flex-col w-full max-w-md bg-background shadow-2xl" style={{ height: '100%' }}>
+    // Outer shell — fills the full viewport on mobile, caps at phone width on desktop
+    <div className="flex justify-center items-stretch bg-gray-100 overflow-hidden" style={{ height: '100dvh' }}>
+      <div className="relative flex flex-col w-full max-w-md bg-background shadow-2xl overflow-hidden" style={{ height: '100%' }}>
 
         {/* ── Status bar spacer (iOS safe area) ── */}
-        <div className="bg-[#00205B]" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
+        <div className="h-safe-top bg-[#00205B]" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
 
         {/* ── Header ── */}
         <div className="relative bg-gradient-to-r from-[#00205B] via-[#003875] to-[#00205B] text-white px-4 py-3 shadow-md overflow-hidden flex-shrink-0">
@@ -594,7 +599,7 @@ export default function App() {
         </div>
 
         {/* ── Messages ── */}
-        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
           {messages.map((message, index) => (
             <div key={message.id} className="space-y-2">
               {message.isAutoAnswered ? (
@@ -648,7 +653,7 @@ export default function App() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* ── Input bar ── */}
+        {/* ── Input bar (pinned to bottom like WhatsApp) ── */}
         <div
           className="flex-shrink-0 border-t bg-card px-3 py-2"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
@@ -659,6 +664,7 @@ export default function App() {
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
+                  // Auto-grow textarea
                   e.target.style.height = 'auto';
                   e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                 }}

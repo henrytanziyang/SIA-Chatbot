@@ -55,7 +55,7 @@ export const components: ComponentInfo[] = [
     ],
   },
   {
-    name: 'Control Device (CD)',
+    name: 'Control Device',
     aliases: ['control device', 'cd', 'brain', 'power distributor'],
     function: 'Brain / Power Distributor',
     properFunctions: [
@@ -190,14 +190,14 @@ export const flows: TroubleshootingFlow[] = [
       ],
       'check-cd': [
         {
-          label: 'CD No Power',
+          label: 'Control Device No Power',
           nextId: 'replace-cd',
-          phrases: ['cd no power', 'cd has no power', 'no power to cd', 'cd not powered'],
+          phrases: ['Control Device no power', 'Control Device has no power', 'no power to Control Device', 'Control Device not powered'],
         },
         {
-          label: 'CD Powered',
+          label: 'Control Device Powered',
           nextId: 'check-faucet-power',
-          phrases: ['cd powered', 'cd has power', 'cd receiving power', 'cd is powered'],
+          phrases: ['Control Device powered', 'Control Device has power', 'Control Device receiving power', 'Control Device is powered'],
         },
       ],
       'check-faucet-power': [
@@ -262,14 +262,14 @@ export const flows: TroubleshootingFlow[] = [
         solution: 'Thermostat is most likely the issue. You can try replacing the thermostat unit.',
       },
       'check-cd': {
-        question: 'Check CD Toggle & CD Connectors\n\nIs the CD (Control Device) receiving power?',
+        question: 'Check Control Device Toggle & Connectors\n\nIs the Control Device receiving power?',
         options: [
-          { label: 'CD No Power', nextId: 'replace-cd' },
-          { label: 'CD Powered', nextId: 'check-faucet-power' },
+          { label: 'Control Device No Power', nextId: 'replace-cd' },
+          { label: 'Control Device Powered', nextId: 'check-faucet-power' },
         ],
       },
       'replace-cd': {
-        solution: 'CD has no power. Check connectors and replace the Control Device (CD) as required.',
+        solution: 'Control Device has no power. Check connectors and replace the Control Device as required.',
       },
       'check-faucet-power': {
         question: 'Check Faucet\n\nIs the faucet receiving power?',
@@ -425,7 +425,7 @@ export const flows: TroubleshootingFlow[] = [
           phrases: ['whirring present', 'thermostat whirring', 'whirring sound'],
         },
         {
-          label: 'No whirring / knocking sound when restarting CD',
+          label: 'No whirring / knocking sound when restarting Control Device',
           nextId: 'replace-thermostat-whirring',
           phrases: ['no whirring', 'no whirring sound', 'knocking sound'],
         },
@@ -458,7 +458,7 @@ export const flows: TroubleshootingFlow[] = [
         question: 'Check thermostat sound when changing temperature\n\nIs a whirring sound present at every interval?',
         options: [
           { label: 'Yes, whirring present', nextId: 'check-heater' },
-          { label: 'No whirring / knocking sound when restarting CD', nextId: 'replace-thermostat-whirring' },
+          { label: 'No whirring / knocking sound when restarting Control Device', nextId: 'replace-thermostat-whirring' },
         ],
       },
       'replace-thermostat-whirring': {
@@ -508,7 +508,7 @@ export const flows: TroubleshootingFlow[] = [
           phrases: ['whirring present', 'thermostat whirring', 'whirring sound'],
         },
         {
-          label: 'No whirring / knocking sound when restarting CD',
+          label: 'No whirring / knocking sound when restarting Control Device',
           nextId: 'replace-thermostat-whirring',
           phrases: ['no whirring', 'no whirring sound', 'knocking sound'],
         },
@@ -541,7 +541,7 @@ export const flows: TroubleshootingFlow[] = [
         question: 'Check thermostat sound when changing temperature\n\nIs a whirring sound present at every interval?',
         options: [
           { label: 'Yes, whirring present', nextId: 'check-heater' },
-          { label: 'No whirring / knocking sound when restarting CD', nextId: 'replace-thermostat-whirring' },
+          { label: 'No whirring / knocking sound when restarting Control Device', nextId: 'replace-thermostat-whirring' },
         ],
       },
       'replace-thermostat-whirring': {

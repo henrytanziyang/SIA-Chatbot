@@ -578,8 +578,8 @@ export default function App() {
 
   return (
     // Outer shell — fills the full viewport on mobile, caps at phone width on desktop
-    <div className="flex justify-center items-stretch min-h-screen bg-gray-100">
-      <div className="relative flex flex-col w-full max-w-md min-h-screen bg-background shadow-2xl overflow-hidden">
+    <div className="flex justify-center items-stretch bg-gray-100 overflow-hidden" style={{ height: '100dvh' }}>
+      <div className="relative flex flex-col w-full max-w-md bg-background shadow-2xl overflow-hidden" style={{ height: '100%' }}>
 
         {/* ── Status bar spacer (iOS safe area) ── */}
         <div className="h-safe-top bg-[#00205B]" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
@@ -666,7 +666,7 @@ export default function App() {
                   setInput(e.target.value);
                   // Auto-grow textarea
                   e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder={
@@ -674,9 +674,9 @@ export default function App() {
                     ? 'Type your findings...'
                     : 'Describe the defect, e.g. "A380 lavatory nil water, SOV open"'
                 }
-                rows={1}
-                className="w-full px-3 py-2.5 bg-input-background rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-[#00205B] text-sm leading-snug"
-                style={{ minHeight: '40px', maxHeight: '100px' }}
+                rows={2}
+                className="w-full px-3 py-3 bg-input-background rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-[#00205B] text-sm leading-snug"
+                style={{ minHeight: '60px', maxHeight: '120px' }}
               />
             </div>
             <button

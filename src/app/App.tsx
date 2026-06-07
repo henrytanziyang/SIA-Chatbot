@@ -245,32 +245,28 @@ export default function App() {
   const [originalInput, setOriginalInput] = useState<string>('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // ── Scroll to bottom on new messages ──────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // ── Shrink layout when mobile keyboard appears ─────────────────────────────
+  // ── iOS keyboard fix: scroll messages when keyboard appears ───────────────
+  // Instead of resizing the container (which causes the jump), we just
+  // scroll the messages area to the bottom whenever the viewport resizes.
   useEffect(() => {
-    const setViewportHeight = () => {
-      const vh = window.visualViewport?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty('--viewport-height', `${vh}px`);
+    const onResize = () => {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     };
-
-    setViewportHeight();
-    window.visualViewport?.addEventListener('resize', setViewportHeight);
-    return () => window.visualViewport?.removeEventListener('resize', setViewportHeight);
-  }, []);
-
-  // ── Scroll to bottom when keyboard opens ──────────────────────────────────
-  useEffect(() => {
-    const handleViewportResize = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    window.visualViewport?.addEventListener('resize', onResize);
+    window.visualViewport?.addEventListener('scroll', onResize);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', onResize);
+      window.visualViewport?.removeEventListener('scroll', onResize);
     };
-
-    window.visualViewport?.addEventListener('resize', handleViewportResize);
-    return () => window.visualViewport?.removeEventListener('resize', handleViewportResize);
   }, []);
 
   const timestamp = () =>
@@ -494,7 +490,6 @@ export default function App() {
         callClassifier(FLOW_CLASSIFIER_PROMPT, textToSend),
       ]);
 
-      // ── CASE 3: Flow ──────────────────────────────────────────────────
       if (VALID_FLOWS.includes(flowId.toLowerCase())) {
         const flow = getFlowById(flowId.toLowerCase());
         if (flow) {
@@ -506,7 +501,6 @@ export default function App() {
         }
       }
 
-      // ── CASE 2: Component ─────────────────────────────────────────────
       if (VALID_COMPONENTS.includes(componentName)) {
         const componentInfo = components.find(c => c.name === componentName) ?? null;
         if (componentInfo) {
@@ -522,7 +516,6 @@ export default function App() {
         }
       }
 
-      // ── CASE 4: Qwen general ──────────────────────────────────────────
       const history = [...messages, userMsg]
         .filter(m => !(m.id === '1' && m.role === 'assistant'))
         .map(m => ({ role: m.role, content: m.content }));
@@ -577,11 +570,11 @@ export default function App() {
   const lastOptionsIndex = messages.reduce((acc, msg, i) => msg.options ? i : acc, -1);
 
   return (
-    <div
-      className="flex justify-center items-stretch bg-gray-100 overflow-hidden"
-      style={{ height: 'var(--viewport-height, 100dvh)' }}
-    >
-      <div className="relative flex flex-col w-full max-w-md bg-background shadow-2xl overflow-hidden" style={{ height: '100%' }}>
+    // Use 100dvh — do NOT manipulate height dynamically.
+    // The input bar stays at the bottom naturally because the browser
+    // scrolls the page up when the keyboard opens on modern iOS/Android.
+    <div className="flex justify-center items-stretch bg-gray-100" style={{ height: '100dvh' }}>
+      <div className="relative flex flex-col w-full max-w-md bg-background shadow-2xl" style={{ height: '100%' }}>
 
         {/* ── Status bar spacer (iOS safe area) ── */}
         <div className="bg-[#00205B]" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
@@ -601,7 +594,7 @@ export default function App() {
         </div>
 
         {/* ── Messages ── */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
           {messages.map((message, index) => (
             <div key={message.id} className="space-y-2">
               {message.isAutoAnswered ? (

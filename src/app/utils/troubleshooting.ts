@@ -234,12 +234,12 @@ export const flows: TroubleshootingFlow[] = [
         ],
       },
       'sov-closed': {
-        question: 'SOV is Closed\n\nOpen the SOV fully and check if water is flowing properly or if there is any leaks.',
+        question: 'Open the SOV fully\n\nCheck if water is flowing properly or if there is any leaks.',
         options: [
           { label: 'Leak from faucet', nextId: 'check-faucet' },
           { label: 'Leak from thermostat or heater', nextId: 'replace-as-required' },
-          { label: 'Water flowing properly with no leaks', nextId: 'issue-resolved'},
           { label: 'Faucet has no water', nextId: 'check-cd'},
+          { label: 'Water flowing properly with no leaks', nextId: 'issue-resolved'},
         ],
       },
       'issue-resolved': {
@@ -262,10 +262,33 @@ export const flows: TroubleshootingFlow[] = [
         solution: 'Thermostat is most likely the issue. You can try replacing the thermostat unit.',
       },
       'check-cd': {
-        question: 'Check Control Device Toggle & Connectors\n\nIs the Control Device receiving power?',
+        question: 'Check Control Device Toggle & Connectors\n\nIs the toggle turned on and are the connectors properly attached?',
+        options: [
+          { label: 'Yes', nextId: 'check-cd-power' },
+          { label: 'No', nextId: 'turn-on-cd' },
+        ],
+      },
+      'check-cd-power': {
+        question: 'Check Control Device\n\nIs the Control Device receiving power?',
         options: [
           { label: 'Control Device No Power', nextId: 'replace-cd' },
           { label: 'Control Device Powered', nextId: 'check-faucet-power' },
+        ],
+      },
+      'turn-on-cd': {
+        question: 'Ensure the toggle is turned on and connectors are properly attached\n\nIs the Control Device receiving power?',
+        options: [
+          { label: 'Control Device No Power', nextId: 'replace-cd' },
+          { label: 'Control Device Powered', nextId: 'check-defect-fixed' },
+        ],
+      },
+      'check-defect-fixed': {
+        question: 'Check if defect has been rectified\n\nCheck if water is flowing properly or if there is any leaks.',
+        options: [
+          { label: 'Leak from faucet', nextId: 'check-faucet' },
+          { label: 'Leak from thermostat or heater', nextId: 'replace-as-required' },
+          { label: 'Faucet has no water', nextId: 'check-faucet-power'},
+          { label: 'Water flowing properly with no leaks', nextId: 'issue-resolved'},
         ],
       },
       'replace-cd': {
